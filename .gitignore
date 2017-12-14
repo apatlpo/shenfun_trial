@@ -1,0 +1,37 @@
+
+clean~
+clean
+*.swp
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# eclipse related files 
+.project
+.pydevproject
+.settings/
+
+# pycharm files
+.idea/
+
+# data files
+*.nc
+
+# fig and movies
+*.png
+!instrum/float_displacement.png
+*.jpg
+*.pdf
+*.mp4
+*.wav
+
+# openoffice
+*.odp#
+
+# jupyter
+.ipynb*
+
+# logins
+*.login
