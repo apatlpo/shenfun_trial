@@ -18,6 +18,8 @@ __pycache__/
 
 # data files
 *.nc
+*.h5
+*.xdmf
 
 # fig and movies
 *.png
