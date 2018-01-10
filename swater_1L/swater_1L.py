@@ -96,16 +96,12 @@ hh = TrialFunction(T)
 hh_test = TestFunction(T)
 
 # coefficients
-Cu = g*inner(hh, Dx(uh_test, 0, 1))
-Cv = g*inner(hh, Dx(vh_test, 1, 1))
-Chu = H*inner(uh, Dx(hh_test, 0, 1))
-Chv = H*inner(vh, Dx(hh_test, 1, 1))
-
-# debug
-#print(Cu)
-#print(Chu)
-#print(Chv)
-#exit()
+A =inner(hh,hh_test)
+#A = (2*np.pi)**2
+Cu = g*inner(hh, Dx(uh_test, 0, 1))/A
+Cv = g*inner(hh, Dx(vh_test, 1, 1))/A
+Chu = H*inner(uh, Dx(hh_test, 0, 1))/A
+Chv = H*inner(vh, Dx(hh_test, 1, 1))/A
 
 count = 0
 def compute_rhs(duvh_hat, uvh_hat, up, vp, T, Tp, w0):
@@ -116,10 +112,6 @@ def compute_rhs(duvh_hat, uvh_hat, up, vp, T, Tp, w0):
     du_hat, dv_hat, dh_hat = duvh_hat[:]
     #
     du_hat[:] = Cu*h_hat
-    #print(du_hat[:])
-    #print(Cu[:])
-    #print(h_hat[:])
-    #exit()
     up = Tp.backward(u_hat, up)
     vp = Tp.backward(v_hat, vp)
     du_hat += -Tp.forward(Cd*up*(up**2+vp**2), w0)  # should be a sqrt here
@@ -131,8 +123,8 @@ def compute_rhs(duvh_hat, uvh_hat, up, vp, T, Tp, w0):
     if np.isnan(np.max(np.abs(dh_hat))):
         print('!! blow up')
         exit()
-    if np.min(np.abs(dh_hat))==0. or np.min(np.abs(du_hat))==0.:
-        print('min(dhdt)=%.2e or min(dudt)=%.2e'%(np.min(np.abs(dh_hat)), np.min(np.abs(du_hat))))
+    if np.linalg.norm(dh_hat)==0. or np.linalg.norm(du_hat)==0.:
+        print('norm(dhdt)=%.2e or norm(dudt)=%.2e'%(np.linalg.norm(dh_hat), np.linalg.norm(du_hat)))
     return duvh_hat
 
 # Integrate using a 4th order Rung-Kutta method
@@ -143,11 +135,11 @@ dt = .001
 end_time = 1000.
 tstep = 0
 write_x_slice = N[0]//2
-levels = np.linspace(0., 1., 100)
-levels = 100
+levels = np.linspace(-1., 1., 100)
+#levels = 100
 if rank == 0:
     plt.figure()
-    image = plt.contourf(X[1][...], X[0][...], u[...], levels)
+    image = plt.contourf(X[1][...], X[0][...], h[...], levels)
     plt.draw()
     plt.pause(1e-4)
 t0 = time()
@@ -179,8 +171,9 @@ while t < end_time-1e-8:
     #    file0.write_tstep(tstep, uvh)
 
     if tstep % 100 == 0 and rank == 0:
+        uvh = TTT.backward(uvh_hat, uvh)
         image.ax.clear()
-        image.ax.contourf(X[1][...], X[0][...], u[...], levels)
+        image.ax.contourf(X[1][...], X[0][...], h[...], levels)
         image.ax.set_title('tstep = %d'%(tstep))
         plt.pause(1e-6)
         plt.savefig('swater_1L_{}_real_{}.png'.format(N[0], tstep))
