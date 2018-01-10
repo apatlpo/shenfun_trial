@@ -127,7 +127,7 @@ def compute_rhs(duvh_hat, uvh_hat, up, vp, T, Tp, w0):
     dv_hat[:] = Cv*h_hat
     dv_hat += -Tp.forward(Cd*vp*(up**2+vp**2), w0)  # should be a sqrt here
     #
-    dh_hat[:] = Chu*u_hat + Chv*v_hat
+    dh_hat[:] = Chu*u_hat + Chv*v_hat # ignore the nonlinear term for now
     if np.isnan(np.max(np.abs(dh_hat))):
         print('!! blow up')
         exit()
