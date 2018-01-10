@@ -104,10 +104,10 @@ tstep = 0
 write_x_slice = N[0]//2
 #levels = np.linspace(-0.06, 0.1, 100)/8
 #if rank == 0:
-    #plt.figure()
-    #image = plt.contourf(X[1][..., 0], X[0][..., 0], u[..., 16], 100)
-    #plt.draw()
-    #plt.pause(1e-4)
+#    plt.figure()
+#    image = plt.contourf(X[1][..., 0], X[0][..., 0], h[...], 100)
+#    plt.draw()
+#    plt.pause(1e-4)
 t0 = time()
 K = np.array(T.local_wavenumbers(True, True, True))
 TV = VectorTensorProductSpace([T, T, T])
@@ -145,6 +145,10 @@ while t < end_time-1e-8:
         ep = comm.allreduce(np.sum(f*gradu)/np.prod(np.array(N)))
         ea = comm.allreduce(np.sum(np.array(X)*(0.5*f**2 + 0.5*gradu**2 - (0.5*u**2 - 0.25*u**4)*f))/np.prod(np.array(N)))
         if rank == 0:
+            #image.ax.clear()
+            #image.ax.contourf(X[1][..., 0], X[0][..., 0], h[...], 100)
+            #plt.pause(1e-6)
+            #plt.savefig('Klein_Gordon_{}_real_{}.png'.format(N[0], tstep))
             print("Time = %2.2f Total energy = %2.8e Linear momentum %2.8e Angular momentum %2.8e" %(t, ekin+es+eg, ep, ea))
         comm.barrier()
 
