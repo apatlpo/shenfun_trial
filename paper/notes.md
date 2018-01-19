@@ -126,4 +126,64 @@ comm = MPI.COMM_WORLD
 fj = ...
 ```
 
+17. `where the first argument is the basis function` ... a function corresponding to one given basis ?
+
+18. dudx biharmonic example: Basis is not imported and I could not guess  what this should be (ShenBiharmonicBasis, R2CBasis, C2CBasis ?)
+
+19. a brief description of the project method would have been helpful after the dudx biharmonic example. For example is it necessary to provide uh_hat on top of u?
+
+20. I could not get the dudx biharmonic case to work, see https://github.com/apatlpo/shenfun_trial/blob/master/paper/biharmonic.py . Failure looks like:
+```
+(shenfun) barracuda:paper aponte$ mpirun -n 4 python biharmonic.py
+Traceback (most recent call last):
+  File "biharmonic.py", line 21, in <module>
+    f_hat = inner(v, fj) # Some right hand side
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/shenfun/forms/inner.py", line 111, in inner
+    output_array = space.scalar_product(trial, output_array)
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/mpi4py_fft/mpifft.py", line 36, in __call__
+    self.input_array[...] = input_array
+ValueError: could not broadcast input array from shape (32,33,34) into shape (16,17,34)
+Traceback (most recent call last):
+  File "biharmonic.py", line 21, in <module>
+    f_hat = inner(v, fj) # Some right hand side
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/shenfun/forms/inner.py", line 111, in inner
+    output_array = space.scalar_product(trial, output_array)
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/mpi4py_fft/mpifft.py", line 36, in __call__
+    self.input_array[...] = input_array
+ValueError: could not broadcast input array from shape (32,33,34) into shape (16,16,34)
+Traceback (most recent call last):
+  File "biharmonic.py", line 21, in <module>
+    f_hat = inner(v, fj) # Some right hand side
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/shenfun/forms/inner.py", line 111, in inner
+    output_array = space.scalar_product(trial, output_array)
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/mpi4py_fft/mpifft.py", line 36, in __call__
+    self.input_array[...] = input_array
+ValueError: could not broadcast input array from shape (32,33,34) into shape (16,17,34)
+Traceback (most recent call last):
+  File "biharmonic.py", line 21, in <module>
+    f_hat = inner(v, fj) # Some right hand side
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/shenfun/forms/inner.py", line 111, in inner
+    output_array = space.scalar_product(trial, output_array)
+  File "/Users/aponte/.miniconda3/envs/shenfun/lib/python3.6/site-packages/mpi4py_fft/mpifft.py", line 36, in __call__
+    self.input_array[...] = input_array
+ValueError: could not broadcast input array from shape (32,33,34) into shape (16,16,34)
+```
+
+21. I could not get the vector example to run, see https://github.com/apatlpo/shenfun_trial/blob/master/paper/vector.py:
+```
+(shenfun) br146-244:paper aponte$ python vector.py
+Traceback (most recent call last):
+  File "vector.py", line 20, in <module>
+    u_hat = Tk.forward(u_)
+TypeError: __call__() missing 1 required positional argument: 'output_array'
+(shenfun) br146-244:paper aponte$
+```
+
+22. I may be useful to add leads for future directions or implementations  in the conclusion.
+
+
+
+
+
+
 
