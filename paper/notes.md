@@ -61,6 +61,69 @@ from shenfun import inner , div , grad , TestFunction , TrialFunctio
 from shenfun.chebyshev.bases import ShenDirichletBasis
 ```
 
+7. Add missing libraries for TensorProductSpace illustration, and maybe use T instead of W for the tensor product space in order to be consistent with poisson2D example:
+```
+from shenfun.chebyshev.bases import ShenDirichletBasis
+from shenfun.fourier.bases import FourierBasis
+import numpy as np
+```
 
+8. Add command to run with mpi4py: `mpirun -n 4 python poisson2D.py`
+
+9. `Function has a keyword argument forward_output, that is used as w_hat
+= Function(W, forward_output=True)` mention `forward_output=True` is default
+
+10. `The main difference is that for Legendre it is natural to integrate the weak form by parts and use`. This is not straightfoward. Reference or explanation maybe useful.
+
+11. Add missing libraries to poisson2D example. T is not consistent with W in preceding illustration of tensor product space. For example:
+```
+from shenfun.chebyshev.bases import ShenDirichletBasis
+from shenfun.fourier.bases import FourierBasis
+from shenfun import Function , TensorProductSpace
+from shenfun import inner , div , grad , TestFunction , TrialFunction
+# TensorProductSpace class is used to construct W ,
+# Function is a subclass of numpy.ndarray used to hold solution arrays.
+from mpi4py import MPI
+import numpy as np
+from sympy import symbols , sin, cos, lambdify
+
+comm = MPI.COMM_WORLD
+N = (32, 33)
+
+K0 = ShenDirichletBasis(N[0])
+K1 = FourierBasis(N[1], dtype=np.float)
+T = TensorProductSpace(comm, (K0, K1))
+print(T)
+
+from shenfun.chebyshev.la import Helmholtz as Solver
+
+...
+```
+
+12. While I loosely guess what Helmholtz problem and solvers refers to, it may
+be useful to define or explain this more clearly. 
+
+13. 3D example has the W vs T ambiguity
+
+14. A sketch of the MPI domain decomposition, physical vs spectral ones may be more efficient at describing how this is done.
+
+15. For the biharmonic problem, it is no clear why dimension 1 and 2 are different:
+```
+K1 = C2CBasis(N[1])
+K2 = R2CBasis(N[2])
+```
+
+16. Some imports are missing in biharmonic pb, fj does not exist:
+```
+from shenfun.chebyshev.bases import ShenBiharmonicBasis
+from shenfun.fourier.bases import R2CBasis, C2CBasis
+from shenfun.chebyshev.la import Biharmonic as Solver
+from shenfun import inner , div , grad , TestFunction , TrialFunction
+from shenfun import Function , TensorProductSpace
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+...
+fj = ...
+```
 
 

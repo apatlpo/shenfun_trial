@@ -1,6 +1,6 @@
 from sympy import Symbol , sin, lambdify
 import numpy as np
-from shenfun import inner , div , grad , TestFunction , TrialFunctio
+from shenfun import inner , div , grad , TestFunction , TrialFunction
 from shenfun.chebyshev.bases import ShenDirichletBasis
 
 # Use sympy to compute a rhs, given an analytical solution
