@@ -17,6 +17,6 @@ Tk = VectorTensorProductSpace([T, T, T])
 v = TestFunction(Tk)
 u_ = Function(Tk, False)
 u_[:] = np.random.random(u_.shape)
-u_hat = Tk.forward(u_)
+u_hat = Function(Tk)
+u_hat = Tk.forward(u_, u_hat)
 w_hat = inner(v, curl(u_), uh_hat=u_hat)
-
