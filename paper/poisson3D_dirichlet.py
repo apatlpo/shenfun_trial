@@ -45,12 +45,14 @@ v = TestFunction(T)
 
 K = T.local_wavenumbers()
 
-# inspect data layout
-# see poisson3D example on github
-print(comm.Get_rank(), ' spectral ', T.local_slice()) # spectral space
-print(comm.Get_rank(), ' physical ', T.local_slice(spectral=False)) # physical space
-
-sys.exit()
+if True:
+    # inspect data layout
+    # see poisson3D example on github
+    print(comm.Get_rank(), ' spectral ', T.local_slice()) # spectral space
+    print(comm.Get_rank(), ' spectral kx=',K[0][[0,-1],0,0],', ky =',K[1][0,[0,-1],0],' kz =',K[2][0,0,[0,-1]]) # spectral space
+    print(comm.Get_rank(), ' physical ', T.local_slice(spectral=False)) # physical space
+    print(comm.Get_rank(), ' physical x=',X[0][[0,-1],0,0],', y =',X[1][0,[0,-1],0],' z =',X[2][0,0,[0,-1]]) # physical space
+    sys.exit()
 
 # Get f on quad points
 fj = fl(*X)

@@ -29,10 +29,14 @@ ul = lambdify((x, y), ue, 'numpy')
 fl = lambdify((x, y), fe, 'numpy')
 X = T.local_mesh(True)
 
-# inspect data layout
-# see poisson3D example on github
-print(comm.Get_rank(), ' spectral ', T.local_slice()) # spectral space
-print(comm.Get_rank(), ' physical ', T.local_slice(spectral=False)) # physical space
+if True:
+    # inspect data layout
+    # see poisson3D example on github
+    K = T.local_wavenumbers()
+    print(comm.Get_rank(), ' spectral ', T.local_slice())  # spectral space
+    print(comm.Get_rank(), ' spectral kx=', K[0][[0, -1]], ', ky =', K[1][0, [0, -1]])  # spectral space
+    print(comm.Get_rank(), ' physical ', T.local_slice(spectral=False))  # physical space
+    print(comm.Get_rank(), ' physical x=', X[0][[0, -1], 0], ', y =', X[1][0, [0, -1]])  # physical space
 
 # init functions
 u = TrialFunction(T)
