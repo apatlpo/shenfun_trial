@@ -74,20 +74,18 @@ v[:] = vl(*X)
 h[:] = hl(*X)
 
 # init variables for derivatives
-uf = Function(T, False, buffer=u)
-vf = Function(T, False, buffer=v)
-hf = Function(T, False, buffer=h)
 dv0 = np.zeros_like(u)
-def D(varf,dvar,dim, padded=False):
+work = Array(T, True)
+K = T.local_wavenumbers(scaled=True, eliminate_highest_freq=True)
+def D(var,dvar,dim):
     ''' Wrapper around Dx
     '''
-    if not padded:
-        dvar[:] = T.backward(project(Dx(varf, dim, 1), T))
-    else:
-        dvar[:] = Tp.backward(project(Dx(varf, dim, 1), T))
+    global work
+    work = T.forward(var, work)
+    dvar = T.backward((1j*K[dim])*work, dvar)
     return dvar
 
-dhdx = D(hf,dv0,0)
+dhdx = D(h,dv0,0)
 #print(dhdx is dv0) # test if objects are the same
 
 if rank == 0:
@@ -99,6 +97,7 @@ if rank == 0:
 
 # RHS
 count = 0
+@profile
 def compute_rhs(duvh, uvh):
     global count
     count += 1
@@ -106,22 +105,22 @@ def compute_rhs(duvh, uvh):
     u, v, h = uvh[:]
     du, dv, dh = duvh[:]
     #
-    du[:] = -g*D(hf,dv0,0) # -g*dhdx
-    du += -u*D(uf,dv0,0)   # -u*dudx
-    du += -v*D(uf,dv0,1)   # -v*dudy
+    du[:] = -g*D(h,dv0,0) # -g*dhdx
+    du += -u*D(u,dv0,0)   # -u*dudx
+    du += -v*D(u,dv0,1)   # -v*dudy
     du += -Cd/H*u*np.sqrt(u**2+v**2)
     du += f*v
     #
-    dv[:] = -g*D(hf,dv0,1) # -g*dhdy
-    dv += -u*D(vf,dv0,0)   # -u*dvdx
-    dv += -v*D(vf,dv0,1)   # -v*dvdy
+    dv[:] = -g*D(h,dv0,1) # -g*dhdy
+    dv += -u*D(v,dv0,0)   # -u*dvdx
+    dv += -v*D(v,dv0,1)   # -v*dvdy
     dv += -Cd/H*v*np.sqrt(u**2+v**2)
     dv += -f*u
     #
-    dh[:] = -(H+h)*D(uf,dv0,0) # -H*dudx
-    dh += -u*D(hf,dv0,0)   # -u*dhdx
-    dh += -v*D(hf,dv0,1)   # -v*dhdy
-    dh += -H*D(vf,dv0,1)   # -H*dvdy
+    dh[:] = -(H+h)*D(u,dv0,0) # -H*dudx
+    dh += -u*D(h,dv0,0)   # -u*dhdx
+    dh += -v*D(h,dv0,1)   # -v*dhdy
+    dh += -H*D(v,dv0,1)   # -H*dvdy
     if np.isnan(np.max(np.abs(dh))):
         print('!! blow up')
         exit()
@@ -134,7 +133,7 @@ def compute_rhs(duvh, uvh):
 a = [1./6., 1./3., 1./3., 1./6.]         # Runge-Kutta parameter
 b = [0.5, 0.5, 1.]                       # Runge-Kutta parameter
 #
-# t = 0.0
+t = 0.0
 dt = 60.*10
 end_time = 3600.*24
 tstep = 0

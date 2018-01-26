@@ -23,6 +23,7 @@ __pycache__/
 *.nc
 *.h5
 *.xdmf
+*.lprof
 
 # fig and movies
 *.png
