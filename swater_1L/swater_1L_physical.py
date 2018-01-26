@@ -4,26 +4,24 @@ Solve nonlinear 1 layer shallow water equation [-L/2., L/2.]**2 with periodic bc
     (u,v)_t + (u.nabla)(u,v) - f (u,-v) = -g*grad(h) - Cd/H*(u,v)*sqrt(u**2+v**2)        (1)
     h_t = -div( (H+h)*u)                                                    (2)
 
+Using the Fourier basis for all two spatial directions.
+Equations are timestepped in physical space though.
+
 Discretize in time with 4th order Runge-Kutta
 with both u(x, y, t=0) and h(x, y, t=0) given.
 
-Using the Fourier basis for all two spatial directions.
-
-mpirun -np 4 python swater_1L.py
+mpirun -np 4 python swater_1L_physical.py
 
 """
 from sys import exit
 from sympy import symbols, exp, lambdify
-import numpy as np
 import matplotlib.pyplot as plt
 from mpi4py import MPI
-from time import time
-import h5py
+#
 from shenfun.fourier.bases import R2CBasis, C2CBasis
 from shenfun import *
-from shenfun.utilities.h5py_writer import HDF5Writer
-from shenfun.utilities.generate_xdmf import generate_xdmf
 
+# get MPI info
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
@@ -43,7 +41,6 @@ ve = 0.
 ul = lambdify((x, y), ue, 'numpy')
 vl = lambdify((x, y), ve, 'numpy')
 hl = lambdify((x, y), he, 'numpy')
-
 
 # Size of discretization
 N = (128, 128)
@@ -80,10 +77,7 @@ h[:] = hl(*X)
 uf = Function(T, False, buffer=u)
 vf = Function(T, False, buffer=v)
 hf = Function(T, False, buffer=h)
-dv1dx = np.zeros_like(u)
-#dv2dx = np.zeros_like(u)
-dv1dy = np.zeros_like(u)
-#dv2dy = np.zeros_like(u)
+dv0 = np.zeros_like(u)
 def D(varf,dvar,dim, padded=False):
     ''' Wrapper around Dx
     '''
@@ -93,12 +87,13 @@ def D(varf,dvar,dim, padded=False):
         dvar[:] = Tp.backward(project(Dx(varf, dim, 1), T))
     return dvar
 
-dhdx = D(hf,dv1dx,0)
-#print(dhdx is dv1dx)
+dhdx = D(hf,dv0,0)
+#print(dhdx is dv0) # test if objects are the same
 
 if rank == 0:
     plt.figure()
-    image = plt.contourf(X[1][...], X[0][...], dhdx[...], 10)
+    levels = np.linspace(-1., 1., 100)
+    image = plt.contourf(X[1][...], X[0][...], dhdx[...], levels)
     plt.draw()
     plt.pause(1e2)
 
@@ -111,22 +106,22 @@ def compute_rhs(duvh, uvh):
     u, v, h = uvh[:]
     du, dv, dh = duvh[:]
     #
-    du[:] = -g*D(hf,dv1dx,0) # -g*dhdx
-    du += -u*D(uf,dv1dx,0)   # -u*dudx
-    du += -v*D(uf,dv1dx,1)   # -v*dudy
+    du[:] = -g*D(hf,dv0,0) # -g*dhdx
+    du += -u*D(uf,dv0,0)   # -u*dudx
+    du += -v*D(uf,dv0,1)   # -v*dudy
     du += -Cd/H*u*np.sqrt(u**2+v**2)
     du += f*v
     #
-    dv[:] = -g*D(hf,dv1dx,1) # -g*dhdy
-    dv += -u*D(vf,dv1dx,0)   # -u*dvdx
-    dv += -v*D(vf,dv1dx,1)   # -v*dvdy
+    dv[:] = -g*D(hf,dv0,1) # -g*dhdy
+    dv += -u*D(vf,dv0,0)   # -u*dvdx
+    dv += -v*D(vf,dv0,1)   # -v*dvdy
     dv += -Cd/H*v*np.sqrt(u**2+v**2)
     dv += -f*u
     #
-    dh[:] = -(H+h)*D(uf,dv1dx,0) # -H*dudx
-    dh += -u*D(hf,dv1dx,0)   # -u*dhdx
-    dh += -v*D(hf,dv1dx,1)   # -v*dhdy
-    dh += -H*D(vf,dv1dx,1)   # -H*dvdy
+    dh[:] = -(H+h)*D(uf,dv0,0) # -H*dudx
+    dh += -u*D(hf,dv0,0)   # -u*dhdx
+    dh += -v*D(hf,dv0,1)   # -v*dhdy
+    dh += -H*D(vf,dv0,1)   # -H*dvdy
     if np.isnan(np.max(np.abs(dh))):
         print('!! blow up')
         exit()
@@ -135,23 +130,20 @@ def compute_rhs(duvh, uvh):
     return duvh
 
 
-
-
 # Integrate using a 4th order Rung-Kutta method
 a = [1./6., 1./3., 1./3., 1./6.]         # Runge-Kutta parameter
 b = [0.5, 0.5, 1.]                       # Runge-Kutta parameter
-t = 0.0
+#
+# t = 0.0
 dt = 60.*10
 end_time = 3600.*24
 tstep = 0
-levels = np.linspace(-1., 1., 100)
-#levels = 100
+#
 if rank == 0:
     plt.figure()
     image = plt.contourf(X[1][...], X[0][...], h[...], levels)
     plt.draw()
     plt.pause(1.e-4)
-t0 = time()
 #
 while t < end_time-1e-8:
     t += dt
