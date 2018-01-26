@@ -1,3 +1,4 @@
+import sys
 from shenfun.chebyshev.bases import ShenDirichletBasis
 from shenfun.fourier.bases import FourierBasis
 from shenfun import Function , TensorProductSpace
@@ -27,6 +28,13 @@ fe = ue.diff(x, 2) + ue.diff(y, 2)
 ul = lambdify((x, y), ue, 'numpy') 
 fl = lambdify((x, y), fe, 'numpy')
 X = T.local_mesh(True)
+
+# inspect data layout
+# see poisson3D example on github
+print(comm.Get_rank(), ' spectral ', T.local_slice()) # spectral space
+print(comm.Get_rank(), ' physical ', T.local_slice(spectral=False)) # physical space
+
+# init functions
 u = TrialFunction(T)
 v = TestFunction(T)
 
