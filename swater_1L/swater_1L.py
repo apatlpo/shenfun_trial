@@ -1,4 +1,4 @@
-r"""
+"""
 Solve 1 layer shallow water equation [-2pi, 2pi]**3 with periodic bcs
 
     (u,v)_t = -g*grad(h) - Cd*(u,v)*sqrt(u**2+v**2)        (1)
@@ -64,8 +64,8 @@ Tp = T
 
 file0 = HDF5Writer("swater_1L{}.h5".format(N[0]), ['u', 'v', 'h'], TTT)
 
-X = T.local_mesh(True)
-uvh = Array(TTT, False)
+X = T.local_mesh(True) # physical grid
+uvh = Array(TTT, False) # in physical space
 u, v, h = uvh[:]
 up = Array(Tp, False)
 vp = Array(Tp, False)
