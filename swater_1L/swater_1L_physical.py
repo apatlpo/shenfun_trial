@@ -12,6 +12,11 @@ with both u(x, y, t=0) and h(x, y, t=0) given.
 
 mpirun -np 4 python swater_1L_physical.py
 
+For profiling:
+kernprof -lv swater_1L_physical.py
+python -m line_profiler swater_1L_physical.py.lprof
+
+
 """
 from sys import exit
 from sympy import symbols, exp, lambdify
