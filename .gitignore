@@ -26,7 +26,7 @@ __pycache__/
 
 # fig and movies
 *.png
-!instrum/float_displacement.png
+!paper/*.png
 *.jpg
 *.pdf
 *.mp4
