@@ -43,7 +43,7 @@ curl_hat = Function(TV)
 curl_ = Function(TV, False)
 X = T.local_mesh(True)
 
-@profile
+#@profile
 def LinearRHS():
     A = inner(u, v)
     L = inner(nu*div(grad(u)), v) / A  # L is shape (N[0], N[1], N[2]//2+1), but used as (3, N[0], N[1], N[2]//2+1) due to broadcasting
@@ -63,8 +63,12 @@ def NonlinearRHS(U, U_hat, dU):
     dU -= P_hat*K
     return dU
 
+
+
 if __name__ == '__main__':
-    for integrator in (RK4, ETDRK4):
+    #for integrator in (RK4, ETDRK4):
+    for integrator in (RK4,):
+
         # Initialization
         U[0] = np.sin(X[0])*np.cos(X[1])*np.cos(X[2])
         U[1] =-np.cos(X[0])*np.sin(X[1])*np.cos(X[2])
