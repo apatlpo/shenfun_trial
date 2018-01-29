@@ -54,7 +54,8 @@ vl = lambdify((x, y), ve, 'numpy')
 hl = lambdify((x, y), he, 'numpy')
 
 # Size of discretization
-N = (128, 128)
+N = (32,32)
+#N = (128, 128)
 
 # initial spectral spaces
 SD0 = chebyshev.bases.ShenDirichletBasis(N[0], domain=(-2*np.pi*L, 2*np.pi*L))
@@ -71,6 +72,11 @@ TTT = MixedTensorProductSpace([Tu, Tv, Th])
 
 # init vectors
 X = Th.local_mesh(True)  # physical grid
+if True:
+    Xu = Tu.local_mesh(True)  # physical grid
+    Xv = Tv.local_mesh(True)  # physical grid
+    assert np.allclose(X,Xu)
+    assert np.allclose(X, Xv)
 uvh = Array(TTT, False) # in physical space
 u, v, h = uvh[:]
 print(u.shape)
@@ -106,15 +112,18 @@ def D(varf,dvar,dim,T):
     dvar[:] = T.backward(project(Dx(varf, dim, 1), T), output_array=dvar)
     return dvar
 
-dhdx = D(hf,dv0,0,Th)
+dhdx = D(hf,dv0,0,Tu)
 #print(dhdx is dv0) # test if objects are the same
 
 if rank == 0:
     plt.figure()
     levels = np.linspace(-1., 1., 100)
-    image = plt.contourf(X[1][...], X[0][...], dhdx[...], 10)
+    image = plt.contourf(X[1][...]/1e3, X[0][...]/1e3, dhdx[...], 10)
+    plt.colorbar()
     plt.draw()
     plt.pause(1e2)
+
+#sys.exit()
 
 # RHS
 count = 0
@@ -155,7 +164,7 @@ a = [1./6., 1./3., 1./3., 1./6.]         # Runge-Kutta parameter
 b = [0.5, 0.5, 1.]                       # Runge-Kutta parameter
 #
 t = 0.0
-dt = 60.*10
+dt = 60.*1
 end_time = 3600.*24
 tstep = 0
 #
