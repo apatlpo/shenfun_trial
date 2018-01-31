@@ -25,6 +25,8 @@ from mpi4py import MPI
 #
 from shenfun.fourier.bases import R2CBasis, C2CBasis
 from shenfun import *
+from nc_writer import NCWriter
+
 
 # get MPI info
 comm = MPI.COMM_WORLD
@@ -100,9 +102,12 @@ if rank == 0:
     plt.draw()
     plt.pause(1e2)
 
+# file writer
+file0 = NCWriter("output.nc", ['u', 'v', 'h'], TTT, clobber=True)
+
 # RHS
 count = 0
-@profile
+#@profile
 def compute_rhs(duvh, uvh):
     global count
     count += 1
@@ -167,3 +172,8 @@ while t < end_time-1e-8:
         image.ax.set_title('tstep = %d'%(tstep))
         plt.pause(1e-6)
         plt.savefig('figs/swater_1L_{}_real_{}.png'.format(N[0], tstep))
+
+    if tstep % 10 == 0:
+        file0.write_tstep(tstep, uvh)
+
+file0.close()
