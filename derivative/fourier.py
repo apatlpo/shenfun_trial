@@ -73,9 +73,13 @@ class f_optimized(fourier):
         ''' Wrapper around Dx
         '''
         self.work = self.T.forward(self.h, self.work)
-        dvar = self.T.backward((1j*self.K[dim])*self.work, dvar)
+        #dvar = self.T.backward((1j*self.K[dim])*self.work, dvar)
+        dvar = self.T.backward(Kmult(self.K[dim],self.work), dvar)
         return dvar
 
+@profile
+def Kmult(K,work):
+    return (1j*K)*work
 
 class f_numba(fourier):
 
